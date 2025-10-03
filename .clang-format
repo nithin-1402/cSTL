@@ -1,0 +1,50 @@
+# .clang-format for cSTL library
+---
+# Base style
+BasedOnStyle: LLVM
+Language: Cpp
+
+# Indentation
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+
+# Braces
+BreakBeforeBraces: Allman
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Inline
+IndentCaseLabels: true
+
+# Pointers & references
+PointerAlignment: Left  # "int *ptr" instead of "int* ptr"
+
+# Spaces
+SpaceAfterCStyleCast: true
+SpacesInParentheses: false
+SpaceBeforeParens: ControlStatements
+SpaceAfterLogicalNot: true
+SpaceBeforeAssignmentOperators: true
+
+# Line breaks / wrapping
+ColumnLimit: 100
+AllowAllParametersOfDeclarationOnNextLine: false
+BinPackParameters: false
+BinPackArguments: false
+
+# Includes
+IncludeBlocks: Preserve
+SortIncludes: true
+IncludeCategories:
+  - Regex: '^"'
+    Priority: 1
+  - Regex: '^<'
+    Priority: 2
+
+# Comments
+AlignTrailingComments: true
+SpacesBeforeTrailingComments: 1
+
+# Misc
+DerivePointerAlignment: false
+IndentExternBlock: false
