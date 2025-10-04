@@ -9,6 +9,7 @@ Or, you can install the headers system wide to use it across all projects.
 Currently, the following data structures are supported:  
 1. Array
 2. Stack
+3. Queue
 
 And the following algorithms:  
 1. Search

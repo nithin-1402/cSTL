@@ -37,7 +37,7 @@ int main(void)
 
     // Pop element
     printf("---- Pop element ----\n");
-    cArray_int_pop(&arr);
+    cArray_int_pop(&arr, NULL);
     cArray_int_print(&arr);
 
     // Insert element at index 1

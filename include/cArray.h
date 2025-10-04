@@ -50,12 +50,10 @@ extern "C"
 #define CARRAY_GENERATE(T, CPY, CMP)                                                               \
     typedef struct                                                                                 \
     {                                                                                              \
-        /* Pointer to user provided memory */                                                      \
         T* array;                                                                                  \
-        /* Logical size of the array, internally managed by the library */                         \
         int size;                                                                                  \
-        /* Max size of the provided buffer */                                                      \
         int capacity;                                                                              \
+        int head;                                                                                  \
     } cArray_##T;                                                                                  \
                                                                                                    \
     /* Initialize a cArray with the buffer and its max capacity */                                 \
@@ -65,35 +63,32 @@ extern "C"
         vector->array = array;                                                                     \
         vector->capacity = capacity;                                                               \
         vector->size = 0;                                                                          \
+        vector->head = 0;                                                                          \
     }                                                                                              \
                                                                                                    \
     static inline bool cArray_##T##_push(cArray_##T* vector, const T* element)                     \
     {                                                                                              \
         if (vector->size >= vector->capacity)                                                      \
-        {                                                                                          \
             return false;                                                                          \
-        }                                                                                          \
         CPY(&vector->array[vector->size], element);                                                \
         vector->size++;                                                                            \
         return true;                                                                               \
     }                                                                                              \
                                                                                                    \
-    static inline bool cArray_##T##_pop(cArray_##T* vector)                                        \
+    static inline bool cArray_##T##_pop(cArray_##T* vector, T* out)                                \
     {                                                                                              \
         if (vector->size <= 0)                                                                     \
-        {                                                                                          \
             return false;                                                                          \
-        }                                                                                          \
         vector->size--;                                                                            \
+        if (out)                                                                                   \
+            CPY(out, &vector->array[vector->size]);                                                \
         return true;                                                                               \
     }                                                                                              \
                                                                                                    \
     static inline bool cArray_##T##_insert(cArray_##T* vector, const T* element, const int index)  \
     {                                                                                              \
         if ((vector->size >= vector->capacity) || (index > vector->size) || (index < 0))           \
-        {                                                                                          \
             return false;                                                                          \
-        }                                                                                          \
         for (int i = (vector->size - 1); i >= index; i--)                                          \
         {                                                                                          \
             CPY(&vector->array[i + 1], &vector->array[i]);                                         \
@@ -106,9 +101,7 @@ extern "C"
     static inline bool cArray_##T##_delete(cArray_##T* vector, const int index)                    \
     {                                                                                              \
         if ((vector->size <= 0) || (index >= vector->size) || (index < 0))                         \
-        {                                                                                          \
             return false;                                                                          \
-        }                                                                                          \
         for (int i = index; i < (vector->size - 1); i++)                                           \
         {                                                                                          \
             CPY(&vector->array[i], &vector->array[i + 1]);                                         \
@@ -122,9 +115,7 @@ extern "C"
         for (int i = 0; i < vector->size; i++)                                                     \
         {                                                                                          \
             if (CMP(element, &vector->array[i]) == 0)                                              \
-            {                                                                                      \
                 return i;                                                                          \
-            }                                                                                      \
         }                                                                                          \
         return -1;                                                                                 \
     }                                                                                              \
@@ -132,9 +123,7 @@ extern "C"
     static inline bool cArray_##T##_push_unique(cArray_##T* vector, const T* element)              \
     {                                                                                              \
         if (cArray_##T##_find(vector, element) >= 0)                                               \
-        {                                                                                          \
             return false;                                                                          \
-        }                                                                                          \
         return cArray_##T##_push(vector, element);                                                 \
     }                                                                                              \
                                                                                                    \
@@ -142,18 +131,14 @@ extern "C"
         cArray_##T* vector, const T* element, const int index)                                     \
     {                                                                                              \
         if (cArray_##T##_find(vector, element) >= 0)                                               \
-        {                                                                                          \
             return false;                                                                          \
-        }                                                                                          \
         return cArray_##T##_insert(vector, element, index);                                        \
     }                                                                                              \
                                                                                                    \
     static inline bool cArray_##T##_binsert(cArray_##T* vector, const T* element)                  \
     {                                                                                              \
         if (vector->size >= vector->capacity)                                                      \
-        {                                                                                          \
             return false;                                                                          \
-        }                                                                                          \
         int head = 0, tail = vector->size - 1;                                                     \
         int index = vector->size;                                                                  \
         while (head <= tail)                                                                       \
@@ -175,14 +160,10 @@ extern "C"
     static inline int cArray_##T##_bsearch(cArray_##T* vector, const T* element)                   \
     {                                                                                              \
         if (vector->size <= 0)                                                                     \
-        {                                                                                          \
             return -1;                                                                             \
-        }                                                                                          \
         if ((CMP(element, &vector->array[vector->size - 1]) > 0) ||                                \
             (CMP(element, &vector->array[0]) < 0))                                                 \
-        {                                                                                          \
             return -1;                                                                             \
-        }                                                                                          \
                                                                                                    \
         int head = 0, tail = vector->size - 1;                                                     \
         while (head <= tail)                                                                       \
@@ -222,6 +203,26 @@ extern "C"
                 }                                                                                  \
             }                                                                                      \
         }                                                                                          \
+    }                                                                                              \
+                                                                                                   \
+    static inline bool cArray_##T##_enqueue(cArray_##T* vector, const T* element)                  \
+    {                                                                                              \
+        if (vector->size >= vector->capacity)                                                      \
+            return false;                                                                          \
+        CPY(&vector->array[(vector->head + vector->size) % vector->capacity], element);            \
+        vector->size++;                                                                            \
+        return true;                                                                               \
+    }                                                                                              \
+                                                                                                   \
+    static inline bool cArray_##T##_dequeue(cArray_##T* vector, T* out)                            \
+    {                                                                                              \
+        if (vector->size <= 0)                                                                     \
+            return false;                                                                          \
+        if (out)                                                                                   \
+            CPY(out, &vector->array[vector->head]);                                                \
+        vector->head = (vector->head + 1) % vector->capacity;                                      \
+        vector->size--;                                                                            \
+        return true;                                                                               \
     }
 
 #define CARRAY_PRIMITIVE_CPY(T)                                                                    \
