@@ -18,7 +18,7 @@ int main(void)
 {
     CBITSET_CREATE(bitset, NUM_BITS)
 
-    // set one bit
+    // set a bit
     printf("---- Set bit ----\n");
     cBitset_setbit(&bitset, 1);
     print_bitset(&bitset);

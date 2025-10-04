@@ -30,7 +30,6 @@
 #define CSTL_ARRAY_H
 
 #include <stdbool.h>
-#include <string.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -38,7 +37,7 @@ extern "C"
 #endif
 
 /**
- * Generate a cArray struct and its associated API for each type T
+ * Generate the cArray for type T and its associated functions
  * @param T type of the array
  * @param CPY of signature void T_cpy(T* dest, const T* src)
  * @param CMP of signature int T_cmp(const T* a, const T* b)
@@ -51,17 +50,23 @@ extern "C"
 #define CARRAY_GENERATE(T, CPY, CMP)                                                               \
     typedef struct                                                                                 \
     {                                                                                              \
+        /* Pointer to user provided memory */                                                      \
         T* array;                                                                                  \
+        /* Logical size of the array, internally managed by the library */                         \
         int size;                                                                                  \
+        /* Max size of the provided buffer */                                                      \
         int capacity;                                                                              \
     } cArray_##T;                                                                                  \
                                                                                                    \
-    static inline void cArray_##T##_init(cArray_##T* vector, T* array, const int capacity)         \
+    /* Initialize a cArray with the buffer and its max capacity */                                 \
+    static inline void cArray_##T##_init_from_buffer(                                              \
+        cArray_##T* vector, T* array, const int capacity)                                          \
     {                                                                                              \
         vector->array = array;                                                                     \
         vector->capacity = capacity;                                                               \
         vector->size = 0;                                                                          \
     }                                                                                              \
+                                                                                                   \
     static inline bool cArray_##T##_push(cArray_##T* vector, const T* element)                     \
     {                                                                                              \
         if (vector->size >= vector->capacity)                                                      \
@@ -98,7 +103,7 @@ extern "C"
         return true;                                                                               \
     }                                                                                              \
                                                                                                    \
-    static inline bool cArray_##T##_remove(cArray_##T* vector, const int index)                    \
+    static inline bool cArray_##T##_delete(cArray_##T* vector, const int index)                    \
     {                                                                                              \
         if ((vector->size <= 0) || (index >= vector->size) || (index < 0))                         \
         {                                                                                          \
@@ -235,6 +240,13 @@ extern "C"
     CARRAY_PRIMITIVE_CPY(T)                                                                        \
     CARRAY_PRIMITIVE_CMP(T)                                                                        \
     CARRAY_GENERATE(T, T##_cpy, T##_cmp)
+
+/* Create a cArray of type T and T buffer[capacity] statically, the user must CARRAY_GENERATE(T,
+ * CPY, CMP) before creating the cArray */
+#define CARRAY_CREATE(name, T, capacity)                                                           \
+    T name##_buf[capacity];                                                                        \
+    cArray_##T name;                                                                               \
+    cArray_##T##_init_from_buffer(&name, name##_buf, capacity);
 
 #ifdef __cplusplus
 }
