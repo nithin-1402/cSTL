@@ -71,9 +71,23 @@ int main(void)
     printf("Insert 55 success? %s\n", pushed ? "true" : "false");
     cArray_int_print(&arr);
 
-    // Sort array
-    printf("---- Sort array ----\n");
-    cArray_int_sort(&arr);
+    // Sort array using insertion sort
+    printf("---- Sort array - Insertion Sort ----\n");
+    cArray_int_insertion_sort(&arr, 0, arr.size - 1);
+    cArray_int_print(&arr);
+
+    // Left rotate array and quick sort
+    printf("---- Left rotate array and quick sort ----\n");
+    cArray_int_rotate_left(&arr, 2);
+    cArray_int_print(&arr);
+    cArray_int_quick_sort(&arr, 0, arr.size - 1);
+    cArray_int_print(&arr);
+
+    // Right rotate array and merge sort
+    printf("---- Right rotate array and merge sort ----\n");
+    cArray_int_rotate_right(&arr, 2);
+    cArray_int_print(&arr);
+    cArray_int_merge_sort(&arr, 0, arr.size - 1);
     cArray_int_print(&arr);
 
     // Binary insert
